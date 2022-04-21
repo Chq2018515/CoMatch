@@ -19,7 +19,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from WideResNet import WideResnet
-from datasets.cifar import get_train_loader, get_val_loader
+from datasets.custom import get_train_loader, get_val_loader
 from utils import accuracy, setup_default_logging, AverageMeter, WarmupCosineLrScheduler
 
 import tensorboard_logger 
@@ -277,6 +277,7 @@ def main():
                         help='number of batches stored in memory bank')    
     parser.add_argument('--exp-dir', default='CoMatch', type=str, help='experiment id')
     parser.add_argument('--checkpoint', default='', type=str, help='use pretrained model')
+    parser.add_argument('--folds', default='redtheme', type=str, help='guess means k-fold')
     
     args = parser.parse_args()
     
@@ -301,7 +302,7 @@ def main():
         sum(p.numel() for p in model.parameters()) / 1e6))
 
     dltrain_x, dltrain_u = get_train_loader(
-        args.dataset, args.batchsize, args.mu, n_iters_per_epoch, L=args.n_labeled, root=args.root, method='comatch')
+        args.dataset, args.batchsize, args.mu, n_iters_per_epoch, root=args.root, method='comatch')
     dlval = get_val_loader(dataset=args.dataset, batch_size=64, num_workers=2, root=args.root)
 
     wd_params, non_wd_params = [], []
