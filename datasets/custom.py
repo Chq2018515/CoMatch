@@ -54,7 +54,7 @@ def load_data_train(dspth='/opt/chenhaoqing/data/redtheme/batched_data'):
     data_x = np.concatenate(data_x, axis=0)
     label_x = np.concatenate(label_x, axis=0)
     data_x = [
-        el.reshape(3, 32, 32).transpose(1, 2, 0)
+        el.reshape(3, 224, 224).transpose(1, 2, 0)
         for el in data_x
     ]
     
@@ -67,7 +67,7 @@ def load_data_train(dspth='/opt/chenhaoqing/data/redtheme/batched_data'):
     data_u = np.concatenate(data_u, axis=0)
     label_u = np.concatenate(label_u, axis=0)
     data_u = [
-        el.reshape(3, 32, 32).transpose(1, 2, 0)
+        el.reshape(3, 224, 224).transpose(1, 2, 0)
         for el in data_u
     ]
     return data_x, label_x, data_u, label_u
@@ -87,7 +87,7 @@ def load_data_val(dspth='/opt/chenhaoqing/data/redtheme/batched_data'):
     data = np.concatenate(data, axis=0)
     labels = np.concatenate(labels, axis=0)
     data = [
-        el.reshape(3, 32, 32).transpose(1, 2, 0)
+        el.reshape(3, 224, 224).transpose(1, 2, 0)
         for el in data
     ]
     return data, labels
@@ -117,9 +117,8 @@ class Custom(Dataset):
         self.mode = mode
         assert len(self.data) == len(self.labels)
         if dataset == 'redtheme':
-            # TODO 在computemeanvar之后要改
-            compute_mean_var()
-            mean, std = (0.4914, 0.4822, 0.4465), (0.2471, 0.2435, 0.2616)
+            # compute_mean_var()
+            mean, std = (-0.0141, -0.0276, -0.0741), (0.5770, 0.5540, 0.5687)
     
         trans_weak = T.Compose([
             T.Resize((32, 32)),

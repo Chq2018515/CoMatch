@@ -56,8 +56,8 @@ def _encode_png(images):
 def _decode_png(encoded_str):
     bytes_str = base64.decodebytes(encoded_str)
     flattened = np.frombuffer(bytes_str, dtype=np.uint8)
-    return flattened.reshape((-1, input_size, input_size, 3))
-
+    return flattened
+    
 
 def _load_redtheme():
     '''

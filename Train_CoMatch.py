@@ -216,13 +216,13 @@ def evaluate(model, ema_model, dataloader):
             
             logits, _ = model(ims)
             scores = torch.softmax(logits, dim=1)
-            top1, top5 = accuracy(scores, lbs, (1, 5))
+            top1, top3 = accuracy(scores, lbs, (1, 3))
             top1_meter.update(top1.item())
             
             if ema_model is not None:
                 logits, _ = ema_model(ims)
                 scores = torch.softmax(logits, dim=1)
-                top1, top5 = accuracy(scores, lbs, (1, 5))                
+                top1, top3 = accuracy(scores, lbs, (1, 3))                
                 ema_top1_meter.update(top1.item())
 
     return top1_meter.avg, ema_top1_meter.avg
