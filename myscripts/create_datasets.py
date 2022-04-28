@@ -121,6 +121,8 @@ def _load_redtheme_unlabel():
     :return:
     '''
     unlabel_dir = '/opt/chenhaoqing/data/redtheme/unlabel'
+    unlabel_dir = '/opt/chenhaoqing/data/redtheme/redtheme_ssl_20220423to0427'
+    unlabel_dir = '/home/hadoop-seccv/cephfs/data/zhaokang/projects/ssl/data/secure_white_pic_bsj/images'
     unlabel_set, unlabel_lst = {}, []
     unlabel_labels = []
     cv_resize = lambda x: np.array(Image.open(x).resize((input_size,input_size))) # cv2.resize(cv2.imread(x), (input_size, input_size))
@@ -131,9 +133,7 @@ def _load_redtheme_unlabel():
     random.shuffle(unlabel_lst)
 
     for img in unlabel_lst:
-        cls_dir = os.path.basename(os.path.dirname(img))
-        assert cls_dir in ['0_正常', '1_红色头像', '2_红色宣传画'], f"illegal cls {cls_dir}"
-        label = int(cls_dir.split('_')[0])
+        label = 0
         assert label in [0, 1, 2], f"illegal label {label}"
         if cv_resize(img).shape == (input_size, input_size, 3):
             unlabel_labels.append(label)
@@ -144,7 +144,7 @@ def _load_redtheme_unlabel():
 
 
 CONFIGS = dict(
-    redtheme=dict(loader=_load_redtheme, checksums=dict(train=None, test=None)),
+    # redtheme=dict(loader=_load_redtheme, checksums=dict(train=None, test=None)),
     redtheme_unlabel=dict(loader=_load_redtheme_unlabel, checksums=dict(train=None, test=None)),
 )
 
@@ -154,7 +154,6 @@ def main(argv):
         subset = set(argv[1:])
     else:
         subset = set(CONFIGS.keys())
-    # tf.gfile.MakeDirs(libml_data.DATA_DIR)
     for name, config in CONFIGS.items():
         if name not in subset:
             continue
@@ -162,7 +161,7 @@ def main(argv):
         datas = config['loader']() # 通过loader参数调用加载数据的方法
         if name.endswith('unlabel'):
             for i, item in enumerate(chunks(datas['train'], 15000)):
-                with open('unlabel_batch_{}'.format(str(i)),"wb") as f:
+                with open('fp_batch_{}'.format(str(i)),"wb") as f:
                     pickle.dump(item,f)
         #labelled list
         else:

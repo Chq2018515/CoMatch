@@ -93,6 +93,46 @@ def load_data_val(dspth='/opt/chenhaoqing/data/redtheme/batched_data'):
     return data, labels
 
 
+def load_data_fp(dspth='/opt/chenhaoqing/data/redtheme/batched_data'):
+    datalist = [
+        osp.join(dspth, 'fp_batch_0')
+    ]
+    data, labels = [], []
+    for data_batch in datalist:
+        with open(data_batch, 'rb') as fr:
+            entry = pickle.load(fr)
+            lbs = entry['labels'] if 'labels' in entry.keys() else entry['fine_labels']
+            data.append([_decode_png(x) for x in entry['data']])
+            labels.append(lbs)
+    data = np.concatenate(data, axis=0)
+    labels = np.concatenate(labels, axis=0)
+    data = [
+        el.reshape(3, 224, 224).transpose(1, 2, 0)
+        for el in data
+    ]
+    return data, labels
+
+
+def load_data_recall(dspth='/opt/chenhaoqing/data/redtheme/batched_data'):
+    datalist = [
+        osp.join(dspth, 'recall_batch_0')
+    ]
+    data, labels = [], []
+    for data_batch in datalist:
+        with open(data_batch, 'rb') as fr:
+            entry = pickle.load(fr)
+            lbs = entry['labels'] if 'labels' in entry.keys() else entry['fine_labels']
+            data.append([_decode_png(x) for x in entry['data']])
+            labels.append(lbs)
+    data = np.concatenate(data, axis=0)
+    labels = np.concatenate(labels, axis=0)
+    data = [
+        el.reshape(3, 224, 224).transpose(1, 2, 0)
+        for el in data
+    ]
+    return data, labels
+
+
 def compute_mean_var():
     data_x, label_x, data_u, label_u = load_data_train()
     data = data_x + data_u
@@ -204,6 +244,30 @@ def get_train_loader(dataset, batch_size, mu, n_iters_per_epoch, root='/opt/chen
 
 def get_val_loader(dataset, batch_size, num_workers, pin_memory=True, root='/opt/chenhaoqing/data/redtheme/batched_data'):
     data, labels = load_data_val(dspth=root)
+    ds = Custom(
+        dataset=dataset,
+        data=data,
+        labels=labels,
+        mode='test'
+    )
+    dl = torch.utils.data.DataLoader(
+        ds,
+        shuffle=False,
+        batch_size=batch_size,
+        drop_last=False,
+        num_workers=num_workers,
+        pin_memory=pin_memory
+    )
+    return dl
+
+
+# 业务数据测试疑似fp/召回recall
+def get_test_loader(dataset, batch_size, num_workers, type, pin_memory=True, root='/opt/chenhaoqing/data/redtheme/batched_data'):
+    if type == "fp":
+        data, labels = load_data_fp(dspth=root)
+    elif type == "recall":
+        data, labels = load_data_recall(dspth=root)
+    
     ds = Custom(
         dataset=dataset,
         data=data,
