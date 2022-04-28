@@ -230,14 +230,14 @@ def evaluate(model, ema_model, dataloader):
 
 def main():
     parser = argparse.ArgumentParser(description='CoMatch Cifar Training')
-    parser.add_argument('--root', default='./data', type=str, help='dataset directory')
+    parser.add_argument('--root', default='/opt/chenhaoqing/data/redtheme/batched_data', type=str, help='dataset directory')
     parser.add_argument('--wresnet-k', default=2, type=int,
                         help='width factor of wide resnet')
     parser.add_argument('--wresnet-n', default=28, type=int,
                         help='depth of wide resnet')    
-    parser.add_argument('--dataset', type=str, default='CIFAR10',
+    parser.add_argument('--dataset', type=str, default='redtheme',
                         help='number of classes in dataset')
-    parser.add_argument('--n-classes', type=int, default=10,
+    parser.add_argument('--n-classes', type=int, default=3,
                          help='number of classes in dataset')
     parser.add_argument('--n-labeled', type=int, default=40,
                         help='number of labeled samples for training')

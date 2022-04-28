@@ -44,6 +44,7 @@ def accuracy(output, target, topk=(1,)):
     _, pred = output.topk(maxk, 1, largest=True, sorted=True)  # return value, indices
     pred = pred.t()
     correct = pred.eq(target.view(1, -1).expand_as(pred))
+    breakpoint()
 
     res = []
     for k in topk:
