@@ -15,9 +15,8 @@ def my_evaluate(model, dataloader):
             
             logits, _ = model(ims)
             scores = torch.softmax(logits, dim=1)
-            top1, top3 = accuracy(scores, lbs, (1, 3))
+            top1, _ = accuracy(scores, lbs, (1, 3))
             top1_meter.update(top1.item())
-
     return top1_meter.avg
 
 
@@ -79,13 +78,13 @@ def main():
     parameter = torch.load(args.saved_model)
     model.load_state_dict(parameter, strict=False)
     model.eval()
-    # dlfp = get_test_loader(dataset=args.dataset, batch_size=64, num_workers=2, type="fp", root=args.root)
+    dlfp = get_test_loader(dataset=args.dataset, batch_size=64, num_workers=2, type="fp", root=args.root)
     dlrecall = get_test_loader(dataset=args.dataset, batch_size=64, num_workers=2, type="recall", root=args.root)
 
-    fp = 0#my_evaluate(model, dlfp)
+    fp = my_evaluate(model, dlfp)
+    print(100-fp)
     recall = my_evaluate(model, dlrecall)
-
-    print(fp, recall)
+    print(100-recall)
     
 
 if __name__ == '__main__':
