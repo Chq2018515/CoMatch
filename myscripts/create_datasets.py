@@ -122,7 +122,7 @@ def _load_redtheme_unlabel():
     '''
     unlabel_dir = '/opt/chenhaoqing/data/redtheme/unlabel'
     unlabel_dir = '/opt/chenhaoqing/data/redtheme/redtheme_ssl_20220423to0427'
-    unlabel_dir = '/home/hadoop-seccv/cephfs/data/zhaokang/projects/ssl/data/secure_white_pic_bsj/images'
+    # unlabel_dir = '/home/hadoop-seccv/cephfs/data/zhaokang/projects/ssl/data/secure_white_pic_bsj/images'
     unlabel_set, unlabel_lst = {}, []
     unlabel_labels = []
     cv_resize = lambda x: np.array(Image.open(x).resize((input_size,input_size))) # cv2.resize(cv2.imread(x), (input_size, input_size))
@@ -161,7 +161,7 @@ def main(argv):
         datas = config['loader']() # 通过loader参数调用加载数据的方法
         if name.endswith('unlabel'):
             for i, item in enumerate(chunks(datas['train'], 15000)):
-                with open('fp_batch_{}'.format(str(i)),"wb") as f:
+                with open('recall_batch_{}'.format(str(i)),"wb") as f:
                     pickle.dump(item,f)
         #labelled list
         else:

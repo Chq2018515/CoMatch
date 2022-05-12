@@ -156,20 +156,21 @@ class Custom(Dataset):
         self.data, self.labels = data, labels
         self.mode = mode
         assert len(self.data) == len(self.labels)
+        crop_size = 224
         if dataset == 'redtheme':
             # compute_mean_var()
             mean, std = (-0.0141, -0.0276, -0.0741), (0.5770, 0.5540, 0.5687)
     
         trans_weak = T.Compose([
-            T.Resize((32, 32)),
-            T.PadandRandomCrop(border=4, cropsize=(32, 32)),
+            T.Resize((crop_size, crop_size)),
+            T.PadandRandomCrop(border=4, cropsize=(crop_size, crop_size)),
             T.RandomHorizontalFlip(p=0.5),
             T.Normalize(mean, std),
             T.ToTensor(),
         ])
         trans_strong0 = T.Compose([
-            T.Resize((32, 32)),
-            T.PadandRandomCrop(border=4, cropsize=(32, 32)),
+            T.Resize((crop_size, crop_size)),
+            T.PadandRandomCrop(border=4, cropsize=(crop_size, crop_size)),
             T.RandomHorizontalFlip(p=0.5),
             RandomAugment(2, 10),
             T.Normalize(mean, std),
@@ -177,7 +178,7 @@ class Custom(Dataset):
         ])        
         trans_strong1 = transforms.Compose([
             transforms.ToPILImage(),
-            transforms.RandomResizedCrop(32, scale=(0.2, 1.)),     
+            transforms.RandomResizedCrop(crop_size, scale=(0.2, 1.)),     
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomApply([
                 transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)  
@@ -194,7 +195,7 @@ class Custom(Dataset):
             self.trans = TwoCropsTransform(trans_weak, trans_strong0)    
         else:  
             self.trans = T.Compose([
-                T.Resize((32, 32)),
+                T.Resize((crop_size, crop_size)),
                 T.Normalize(mean, std),
                 T.ToTensor(),
             ])

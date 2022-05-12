@@ -1,23 +1,38 @@
 import argparse
+from numpy import append, arange
 import torch
 from WideResNet import WideResnet
 from datasets.custom import get_test_loader
-from utils import AverageMeter, accuracy
+from utils import AverageMeter, get_fp, get_recall
 
 
-def my_evaluate(model, dataloader):
+def my_evaluate(model, dataloader, flag, thresh = 0.9):
     model.eval()
-    top1_meter = AverageMeter()
+    res = AverageMeter()
+    measure = get_fp if flag == "fp" else get_recall
     with torch.no_grad():
         for ims, lbs in dataloader:
             ims = ims.cuda()
             lbs = lbs.cuda()
             
             logits, _ = model(ims)
-            scores = torch.softmax(logits, dim=1)
-            top1, _ = accuracy(scores, lbs, (1, 3))
-            top1_meter.update(top1.item())
-    return top1_meter.avg
+            # 1 softmax
+            # scores = torch.softmax(logits, dim=1)
+
+            # 2 minmax
+            upper = torch.max(logits,dim=1).values.view(-1,1).expand_as(logits)
+            lower = torch.min(logits,dim=1).values.view(-1,1).expand_as(logits)
+            scores = (logits - lower) / (upper - lower) #  0.95      70.83882007519357       71.55987394957984
+            
+            # 3 gaussion
+            # mean = torch.mean(logits)
+            # std = torch.std(logits)
+            # scores = (logits - mean) / std
+            scores = scores / torch.sum(scores, dim=1).view(-1,1).expand_as(scores)
+            
+            res.update(measure(scores, thresh))
+            
+    return res.avg
 
 
 def main():
@@ -70,22 +85,22 @@ def main():
     parser.add_argument('--exp-dir', default='CoMatch', type=str, help='experiment id')
     parser.add_argument('--checkpoint', default='', type=str, help='use pretrained model')
     parser.add_argument('--folds', default='redtheme', type=str, help='guess means k-fold')
-    parser.add_argument('--saved-model', default='redtheme/2/CoMatch/checkpoint_90.pth', type=str, help='use saved model')
+    parser.add_argument('--saved-model', default='redtheme/1/CoMatch/checkpoint_80.pth', type=str, help='use saved model')
     
     args = parser.parse_args()
     model = WideResnet(n_classes=args.n_classes,k=args.wresnet_k, n=args.wresnet_n, proj=True)
     model.cuda()  
     parameter = torch.load(args.saved_model)
     model.load_state_dict(parameter, strict=False)
-    model.eval()
-    dlfp = get_test_loader(dataset=args.dataset, batch_size=64, num_workers=2, type="fp", root=args.root)
-    dlrecall = get_test_loader(dataset=args.dataset, batch_size=64, num_workers=2, type="recall", root=args.root)
-
-    fp = my_evaluate(model, dlfp)
-    print(100-fp)
-    recall = my_evaluate(model, dlrecall)
-    print(100-recall)
     
-
+    thresh_set = append(arange(0.05,1,0.05),arange(0.955,1,0.005))
+    dlfp = get_test_loader(dataset=args.dataset, batch_size=64, num_workers=2, type="fp", root=args.root)
+    for thr in thresh_set:
+        fp = my_evaluate(model, dlfp, "fp", thr)
+        print(thr, "\t", fp)
+    dlrecall = get_test_loader(dataset=args.dataset, batch_size=64, num_workers=2, type="recall", root=args.root)
+    for thr in thresh_set:
+        recall = my_evaluate(model, dlrecall, "recall", thr)
+        print(thr, "\t", recall)
 if __name__ == '__main__':
     main()

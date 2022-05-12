@@ -52,6 +52,24 @@ def accuracy(output, target, topk=(1,)):
     return res
 
 
+def get_fp(output, thresh):
+    batch_size = output.size(0)
+    fp = 0
+    for i, score in enumerate(output):
+        if torch.argmax(score) != 0 and max(score[1], score[2]) > thresh:
+            fp += 1
+    return fp * 100 / batch_size
+
+
+def get_recall(output, thresh):
+    batch_size = output.size(0)
+    recall = 0
+    for i, score in enumerate(output):
+        if torch.argmax(score) != 0 and max(score[1], score[2]) > thresh:
+            recall += 1
+    return recall * 100 / batch_size
+
+
 class AverageMeter(object):
     """
     Computes and stores the average and current value
